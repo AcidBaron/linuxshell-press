@@ -1,0 +1,37 @@
+network:
+  version: 2
+
+  ethernets:
+    eth0:
+      dhcp4: true
+
+    eth1:
+      dhcp4: false
+      dhcp6: false
+      accept-ra: false
+      addresses:
+        - 10.77.0.1/24
+        - fd3a:7b4c:2d91:1::1/64
+
+    eth2:
+      dhcp4: false
+      dhcp6: false
+
+  vlans:
+    eth2.10:
+      id: 10
+      link: eth2
+      dhcp6: false
+      accept-ra: false
+      addresses:
+        - 10.77.10.1/24
+        - fd3a:7b4c:2d91:10::1/64
+
+    eth2.20:
+      id: 20
+      link: eth2
+      dhcp6: false
+      accept-ra: false
+      addresses:
+        - 10.77.20.1/24
+        - fd3a:7b4c:2d91:20::1/64

@@ -1,0 +1,13 @@
+$TTL 3600
+@   IN  SOA infra01.lab.test. hostmaster.lab.test. (
+        2026102201 ; serial
+        3600       ; refresh
+        900        ; retry
+        604800     ; expire
+        300        ; negative cache TTL
+)
+
+    IN  NS  infra01.lab.test.
+
+1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0 IN PTR fw01.lab.test.
+0.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0 IN PTR infra01.lab.test.
