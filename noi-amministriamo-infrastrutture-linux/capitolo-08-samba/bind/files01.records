@@ -1,0 +1,5 @@
+# Zona diretta lab.test - incrementare il seriale SOA prima del reload
+files01          IN  A    10.77.0.20
+
+# Zona inversa 0.77.10.in-addr.arpa - incrementare il seriale SOA
+20               IN  PTR  files01.lab.test.
