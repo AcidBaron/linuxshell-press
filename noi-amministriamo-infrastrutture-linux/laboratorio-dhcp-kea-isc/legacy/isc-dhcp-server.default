@@ -1,0 +1,3 @@
+# Estratto rilevante di /etc/default/isc-dhcp-server usato nel laboratorio
+INTERFACESv4="eth0"
+INTERFACESv6=""
