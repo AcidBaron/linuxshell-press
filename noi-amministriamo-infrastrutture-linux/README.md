@@ -11,13 +11,11 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 3 – Progettare la rete del laboratorio](./capitolo-03-progetto-rete/)
 - [Capitolo 4 – DNS con BIND9](./capitolo-04-bind9/)
 - [Laboratorio parallelo – DHCP con Kea e ISC DHCP legacy](./laboratorio-dhcp-kea-isc/)
-- Capitolo 5 – VLAN, segmentazione e reti multiple
-- Capitolo 6 – IPv6
-- Capitolo 7 – Reti miste Linux e Windows
-- Capitolo 8 – Samba
+- [Capitolo 5 – VLAN, segmentazione e reti multiple](./capitolo-05-vlan-segmentazione/)
+- [Capitolo 6 – IPv6 nell'infrastruttura moderna](./capitolo-06-ipv6/)
+- [Capitolo 7 – Reti miste Linux e Windows](./capitolo-07-reti-miste/)
+- [Capitolo 8 – Samba](./capitolo-08-samba/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
-
-Le voci senza link verranno popolate progressivamente a partire dai capitoli approvati.
 
 ## Convenzioni
 
@@ -27,4 +25,4 @@ Le voci senza link verranno popolate progressivamente a partire dai capitoli app
 - `legacy/`: equivalenti legacy, esercizi di migrazione o materiale storico.
 - `rollback/`: procedure di ritorno allo stato precedente quando utili.
 
-Le procedure diagnostiche non vengono presentate come configurazioni finali.
+Le procedure diagnostiche non vengono presentate come configurazioni finali. Il testo del libro resta l'autorità per spiegazioni, prerequisiti, rischi e sequenza didattica.
