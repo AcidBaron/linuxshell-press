@@ -8,11 +8,12 @@ Il repository raccoglie script, configurazioni e altri file operativi citati nei
 
 ### Noi Amministriamo Infrastrutture Linux
 
+- [Indice dei materiali del libro](./noi-amministriamo-infrastrutture-linux/)
 - [Laboratorio – Provisioning automatico di VM Linux da golden image](./noi-amministriamo-infrastrutture-linux/laboratorio-provisioning-golden-image/)
 
 ## Verifica dei file
 
-Gli script validati nel laboratorio sono accompagnati dal relativo SHA-256. I checksum complessivi disponibili sono raccolti in [SHA256SUMS](./SHA256SUMS).
+Gli script validati nel laboratorio possono essere accompagnati dal relativo SHA-256. I checksum complessivi disponibili sono raccolti in [SHA256SUMS](./SHA256SUMS).
 
 ## Licenza
 
