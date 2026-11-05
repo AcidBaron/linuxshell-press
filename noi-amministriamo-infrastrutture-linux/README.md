@@ -8,9 +8,9 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 
 - [Capitolo 1 – Laboratorio di riferimento con Windows 11 e Hyper-V](./capitolo-01-hyper-v/)
 - [Capitolo 2 – Costruire un router/firewall Linux](./capitolo-02-router-firewall/)
-- Capitolo 3 – Progettare la rete del laboratorio
-- Capitolo 4 – DNS con BIND9
-- Laboratorio parallelo – DHCP con Kea e ISC DHCP legacy
+- [Capitolo 3 – Progettare la rete del laboratorio](./capitolo-03-progetto-rete/)
+- [Capitolo 4 – DNS con BIND9](./capitolo-04-bind9/)
+- [Laboratorio parallelo – DHCP con Kea e ISC DHCP legacy](./laboratorio-dhcp-kea-isc/)
 - Capitolo 5 – VLAN, segmentazione e reti multiple
 - Capitolo 6 – IPv6
 - Capitolo 7 – Reti miste Linux e Windows
