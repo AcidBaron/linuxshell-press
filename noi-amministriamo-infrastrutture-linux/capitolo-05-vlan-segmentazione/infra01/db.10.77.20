@@ -1,0 +1,12 @@
+$TTL 3600
+@   IN  SOA infra01.lab.test. hostmaster.lab.test. (
+        2026101601 ; serial
+        3600
+        900
+        604800
+        300
+)
+
+    IN  NS  infra01.lab.test.
+
+101     IN  PTR vlan20-client01.lab.test.
