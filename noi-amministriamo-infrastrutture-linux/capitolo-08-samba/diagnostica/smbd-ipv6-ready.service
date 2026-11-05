@@ -1,0 +1,9 @@
+[Unit]
+Description=Wait for stable IPv6 ULA on eth0 before Samba
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'for i in {1..60}; do ip -6 -o addr show dev eth0 scope global | grep -v tentative | grep -q "fd3a:7b4c:2d91:1:" && exit 0; sleep 1; done; exit 1'
+RemainAfterExit=yes
