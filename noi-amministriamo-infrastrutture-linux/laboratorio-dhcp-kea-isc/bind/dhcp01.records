@@ -1,0 +1,5 @@
+# Aggiungere alla zona diretta lab.test, incrementando il seriale SOA:
+dhcp01          IN  A    10.77.0.30
+
+# Aggiungere alla zona inversa 0.77.10.in-addr.arpa, incrementando il seriale SOA:
+30              IN  PTR  dhcp01.lab.test.
