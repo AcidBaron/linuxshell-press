@@ -1,0 +1,17 @@
+$TTL 3600
+@   IN  SOA infra01.lab.test. hostmaster.lab.test. (
+        2026101601 ; serial
+        3600       ; refresh
+        900        ; retry
+        604800     ; expire
+        300        ; negative cache TTL
+)
+
+    IN  NS  infra01.lab.test.
+
+fw01            IN  A      10.77.0.1
+infra01         IN  A      10.77.0.10
+linux-client01  IN  A      10.77.0.101
+dns             IN  CNAME  infra01.lab.test.
+vlan10-client01 IN  A      10.77.10.101
+vlan20-client01 IN  A      10.77.20.101
