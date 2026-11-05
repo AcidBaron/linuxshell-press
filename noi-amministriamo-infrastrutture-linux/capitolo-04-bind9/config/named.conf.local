@@ -1,0 +1,9 @@
+zone "lab.test" {
+    type primary;
+    file "/etc/bind/db.lab.test";
+};
+
+zone "0.77.10.in-addr.arpa" {
+    type primary;
+    file "/etc/bind/db.10.77.0";
+};
