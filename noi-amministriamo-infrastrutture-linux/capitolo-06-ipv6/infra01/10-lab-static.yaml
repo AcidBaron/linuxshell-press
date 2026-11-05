@@ -1,0 +1,26 @@
+network:
+  version: 2
+  renderer: networkd
+
+  ethernets:
+    eth0:
+      dhcp4: false
+      dhcp6: false
+      accept-ra: false
+
+      addresses:
+        - 10.77.0.10/24
+        - fd3a:7b4c:2d91:1::10/64
+
+      nameservers:
+        addresses:
+          - 1.1.1.1
+          - 8.8.8.8
+        search: []
+
+      routes:
+        - to: default
+          via: 10.77.0.1
+
+        - to: fd3a:7b4c:2d91::/48
+          via: fd3a:7b4c:2d91:1::1
