@@ -1,0 +1,17 @@
+authoritative;
+ddns-update-style none;
+
+default-lease-time 3600;
+max-lease-time 3600;
+
+option domain-name "lab.test";
+option domain-name-servers 10.77.0.10;
+
+subnet 10.77.0.0 netmask 255.255.255.0 {
+    option subnet-mask 255.255.255.0;
+    option routers 10.77.0.1;
+    option broadcast-address 10.77.0.255;
+
+    range 10.77.0.102 10.77.0.149;
+    range 10.77.0.151 10.77.0.199;
+}
