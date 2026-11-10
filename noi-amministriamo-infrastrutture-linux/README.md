@@ -15,6 +15,7 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 6 – IPv6 nell'infrastruttura moderna](./capitolo-06-ipv6/)
 - [Capitolo 7 – Reti miste Linux e Windows](./capitolo-07-reti-miste/)
 - [Capitolo 8 – Samba](./capitolo-08-samba/)
+- [Capitolo 9 – Proxy forward con Squid](./capitolo-09-squid/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
