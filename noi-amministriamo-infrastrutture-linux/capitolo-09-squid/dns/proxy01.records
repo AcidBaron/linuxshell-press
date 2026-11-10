@@ -1,0 +1,11 @@
+# BIND - Capitolo 9
+# Zona forward lab.test
+proxy01         IN  A       10.77.0.40
+
+# Zona reverse 0.77.10.in-addr.arpa
+40              IN  PTR     proxy01.lab.test.
+
+# Serial validato dopo la modifica: 2026111001
+# Backup creati prima della modifica:
+# /etc/bind/db.lab.test.pre-ch9-proxy01
+# /etc/bind/db.10.77.0.pre-ch9-proxy01
