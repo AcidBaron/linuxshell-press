@@ -1,0 +1,14 @@
+# Forward zone: lab.test
+rp01            IN  A       10.77.0.50
+web01           IN  A       10.77.0.51
+sito1           IN  A       10.77.0.50
+sito2           IN  A       10.77.0.50
+
+# Reverse zone: 0.77.10.in-addr.arpa
+50              IN  PTR     rp01.lab.test.
+51              IN  PTR     web01.lab.test.
+
+# Serial validato: 2026111401
+# Backup creati:
+# /etc/bind/db.lab.test.pre-ch10-reverse-proxy
+# /etc/bind/db.10.77.0.pre-ch10-reverse-proxy
