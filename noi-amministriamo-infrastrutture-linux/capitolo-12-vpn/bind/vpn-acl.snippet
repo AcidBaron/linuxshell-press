@@ -1,4 +1,4 @@
-# Estratto dal /etc/bind/named.conf.options finale validato su infra01.
+# Estratto dall'ACL "lab_clients" finale di /etc/bind/named.conf.options.
 
 acl "lab_clients" {
     127.0.0.1;
@@ -14,3 +14,7 @@ acl "lab_clients" {
     fd3a:7b4c:2d91:10::/64;
     fd3a:7b4c:2d91:20::/64;
 };
+
+# Validazione e reload:
+# sudo named-checkconf
+# sudo rndc reload
