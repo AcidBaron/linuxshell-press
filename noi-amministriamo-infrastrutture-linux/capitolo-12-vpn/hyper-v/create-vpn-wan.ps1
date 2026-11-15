@@ -1,33 +1,44 @@
-# Capitolo 12 - creazione VPN-WAN per il laboratorio Hyper-V
-# Eseguire da PowerShell come amministratore.
+# Helper repository derivato dai comandi del paragrafo 12.2.
+# Il laboratorio e' stato eseguito passo-passo; questo file raccoglie
+# gli stessi comandi in forma riutilizzabile.
 
-$ErrorActionPreference = "Stop"
-$SwitchName = "VPN-WAN"
-$NatName = "VPN-WAN-NAT"
-$Gateway = "10.250.0.1"
-$Prefix = "10.250.0.0/24"
-
-Write-Host "=== Preflight ==="
 Get-NetNat
-Get-VMSwitch | Select-Object Name,SwitchType
-Get-NetRoute | Where-Object { $_.DestinationPrefix -like "10.250.*" }
 
-if (Get-VMSwitch -Name $SwitchName -ErrorAction SilentlyContinue) {
-    throw "Lo switch $SwitchName esiste gia'. Verificare lo stato prima di proseguire."
-}
-if (Get-NetNat -Name $NatName -ErrorAction SilentlyContinue) {
-    throw "Il NAT $NatName esiste gia'. Verificare lo stato prima di proseguire."
-}
+Get-VMSwitch |
+    Select-Object Name,SwitchType
 
-New-VMSwitch -Name $SwitchName -SwitchType Internal
+Get-VMNetworkAdapter `
+    -VMName "fw01" |
+    Format-Table Name,SwitchName,Status -AutoSize
 
-$IfIndex = (Get-NetAdapter -Name "vEthernet ($SwitchName)").ifIndex
+Get-NetRoute |
+    Where-Object { $_.DestinationPrefix -like "10.250.*" }
 
-New-NetIPAddress -InterfaceIndex $IfIndex -IPAddress $Gateway -PrefixLength 24
+New-VMSwitch `
+    -Name "VPN-WAN" `
+    -SwitchType Internal
 
-New-NetNat -Name $NatName -InternalIPInterfaceAddressPrefix $Prefix
+$IfIndex = (
+    Get-NetAdapter -Name "vEthernet (VPN-WAN)"
+).ifIndex
 
-Get-NetIPAddress -InterfaceAlias "vEthernet ($SwitchName)" -AddressFamily IPv4
-Get-NetNat -Name $NatName | Format-List Name,InternalIPInterfaceAddressPrefix,Active
+New-NetIPAddress `
+    -InterfaceIndex $IfIndex `
+    -IPAddress 10.250.0.1 `
+    -PrefixLength 24
 
-Write-Host "VPN-WAN creata. Collegare soltanto l'adapter WAN di fw01 allo switch VPN-WAN."
+New-NetNat `
+    -Name "VPN-WAN-NAT" `
+    -InternalIPInterfaceAddressPrefix 10.250.0.0/24
+
+Get-NetIPAddress `
+    -InterfaceAlias "vEthernet (VPN-WAN)" `
+    -AddressFamily IPv4
+
+Get-NetNat `
+    -Name "VPN-WAN-NAT"
+
+Connect-VMNetworkAdapter `
+    -VMName "fw01" `
+    -Name "WAN" `
+    -SwitchName "VPN-WAN"
