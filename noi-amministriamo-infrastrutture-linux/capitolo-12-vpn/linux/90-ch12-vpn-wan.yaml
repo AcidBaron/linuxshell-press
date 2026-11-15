@@ -1,0 +1,14 @@
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: false
+      addresses:
+        - 10.250.0.2/24
+      routes:
+        - to: default
+          via: 10.250.0.1
+          metric: 100
+      nameservers:
+        addresses:
+          - 10.77.0.10
