@@ -1,6 +1,6 @@
-# Helper repository derivato dai comandi del paragrafo 12.2.
-# Il laboratorio e' stato eseguito passo-passo; questo file raccoglie
-# gli stessi comandi in forma riutilizzabile.
+# Helper di repository derivato dai comandi del paragrafo 12.2.
+# Non era un file preesistente nel laboratorio: raccoglie in uno script
+# i comandi PowerShell eseguiti e documentati nel capitolo.
 
 Get-NetNat
 
