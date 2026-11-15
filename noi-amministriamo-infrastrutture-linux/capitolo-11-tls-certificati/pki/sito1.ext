@@ -1,0 +1,7 @@
+[server_cert]
+basicConstraints = critical,CA:FALSE
+keyUsage = critical,digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:sito1.lab.test
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
