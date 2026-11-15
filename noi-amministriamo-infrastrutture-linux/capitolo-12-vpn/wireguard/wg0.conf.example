@@ -1,0 +1,15 @@
+# /etc/wireguard/wg0.conf - esempio senza secret
+[Interface]
+Address = 10.99.10.1/24
+ListenPort = 51820
+PrivateKey = <FW01_PRIVATE_KEY>
+
+[Peer]
+# windows-client01
+PublicKey = <WINDOWS_CLIENT01_PUBLIC_KEY>
+AllowedIPs = 10.99.10.2/32
+
+# Client successivi: una chiave e un /32 distinti.
+# [Peer]
+# PublicKey = <WINDOWS_CLIENT02_PUBLIC_KEY>
+# AllowedIPs = 10.99.10.3/32
