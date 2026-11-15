@@ -52,6 +52,59 @@ sudo ip route add 10.99.10.0/24 via 10.77.0.60
 sudo ip route add 10.99.20.0/24 via 10.77.0.60
 ```
 
+## WireGuard: installazione e chiavi server
+
+```bash
+sudo apt update
+sudo apt install -y wireguard
+sudo install -d -o root -g root -m 700 /etc/wireguard
+sudo sh -c 'umask 077; wg genkey > /etc/wireguard/fw01-private.key; wg pubkey < /etc/wireguard/fw01-private.key > /etc/wireguard/fw01-public.key'
+sudo chmod 600 /etc/wireguard/fw01-private.key
+sudo chmod 600 /etc/wireguard/fw01-public.key
+```
+
+Dopo aver creato localmente `/etc/wireguard/wg0.conf`:
+
+```bash
+sudo chmod 600 /etc/wireguard/wg0.conf
+sudo systemctl enable --now wg-quick@wg0
+systemctl is-enabled wg-quick@wg0
+systemctl is-active wg-quick@wg0
+ip -br addr show wg0
+ip route show 10.99.10.0/24
+sudo wg show
+```
+
+## VPN-WAN su fw01
+
+Il file `linux/90-ch12-vpn-wan.yaml` corrisponde alla configurazione Netplan finale. Prima della modifica:
+
+```bash
+sudo cp -a /etc/netplan /etc/netplan.pre-ch12-vpn-wan
+sudo install -m 600 linux/90-ch12-vpn-wan.yaml /etc/netplan/90-ch12-vpn-wan.yaml
+sudo netplan generate
+```
+
+Dal PC Hyper-V, dopo avere creato `VPN-WAN`:
+
+```powershell
+Connect-VMNetworkAdapter `
+    -VMName "fw01" `
+    -Name "WAN" `
+    -SwitchName "VPN-WAN"
+```
+
+Poi su `fw01`:
+
+```bash
+sudo netplan apply
+ip -4 -br addr show eth0
+ip route show default
+ping -c 3 10.250.0.1
+ping -c 3 1.1.1.1
+getent ahostsv4 archive.ubuntu.com | head
+```
+
 ## Aggiungere client WireGuard
 
 Ogni client deve avere una coppia di chiavi e un indirizzo tunnel distinti: client01 `.2`, client02 `.3`, client03 `.4` e così via.
@@ -117,6 +170,7 @@ sudo nft list chain inet filter forward | grep -E 'wg0|tun0'
 ## File
 
 - `hyper-v/create-vpn-wan.ps1` — crea VPN-WAN e WinNAT.
+- `linux/90-ch12-vpn-wan.yaml` — Netplan finale di `fw01 eth0`.
 - `wireguard/` — configurazioni di esempio e nftables.
 - `openvpn/` — configurazione server, profilo di esempio, PKI/CRL e nftables.
 - `bind/vpn-acl.snippet` — subnet VPN per l'ACL `lab_clients`.
