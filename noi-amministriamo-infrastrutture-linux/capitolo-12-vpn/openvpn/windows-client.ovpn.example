@@ -33,5 +33,3 @@ verb 3
 <tls-crypt>
 <TLS_CRYPT_KEY>
 </tls-crypt>
-
-# Non pubblicare un profilo reale contenente <key> o <tls-crypt>.
