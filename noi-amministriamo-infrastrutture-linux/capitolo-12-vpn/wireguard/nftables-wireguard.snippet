@@ -1,11 +1,12 @@
-# Integrare nella configurazione nftables persistente di fw01.
+# Estratto dal /etc/nftables.conf finale validato.
+
 define WG_IF = "wg0"
 define WG_NET = 10.99.10.0/24
 
 # chain input
 iifname $WAN_IF udp dport 51820 accept
 
-# Scelta amministrativa del laboratorio: SSH a fw01 dai peer WireGuard
+# SSH dal tunnel WireGuard
 iifname $WG_IF ip saddr $WG_NET tcp dport 22 accept
 
 # chain forward
