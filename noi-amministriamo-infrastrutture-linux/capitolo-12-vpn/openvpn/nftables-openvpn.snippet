@@ -1,4 +1,5 @@
-# Integrare nella configurazione nftables persistente di fw01.
+# Estratto dal /etc/nftables.conf finale validato.
+
 define OVPN_IF = "tun0"
 define OVPN_NET = 10.99.20.0/24
 
@@ -9,5 +10,3 @@ iifname $WAN_IF udp dport 1194 accept
 iifname $OVPN_IF oifname $LAN_IF \
     ip saddr $OVPN_NET ip daddr $LAN_NET \
     counter accept
-
-# La baseline non abilita automaticamente SSH diretto a fw01 dalla rete OpenVPN.
