@@ -8,6 +8,3 @@ PublicKey = <FW01_PUBLIC_KEY>
 Endpoint = 10.250.0.2:51820
 AllowedIPs = 10.99.10.0/24, 10.77.0.10/32
 PersistentKeepalive = 25
-
-# Client realmente remoto:
-# AllowedIPs = 10.99.10.0/24, 10.77.0.0/24
