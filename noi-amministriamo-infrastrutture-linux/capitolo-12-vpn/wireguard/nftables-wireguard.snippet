@@ -1,4 +1,4 @@
-# Estratto dal /etc/nftables.conf finale validato su fw01.
+# Estratto dallo stato finale di /etc/nftables.conf su fw01.
 
 define WG_IF = "wg0"
 define WG_NET = 10.99.10.0/24
@@ -10,4 +10,6 @@ iifname $WAN_IF udp dport 51820 accept
 iifname $WG_IF ip saddr $WG_NET tcp dport 22 accept
 
 # chain forward
-iifname $WG_IF oifname $LAN_IF ip saddr $WG_NET ip daddr $LAN_NET counter accept
+iifname $WG_IF oifname $LAN_IF \
+    ip saddr $WG_NET ip daddr $LAN_NET \
+    counter accept
