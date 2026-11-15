@@ -1,0 +1,37 @@
+client
+dev tun
+proto udp4
+
+remote 10.250.0.2 1194
+resolv-retry infinite
+nobind
+
+persist-key
+persist-tun
+
+remote-cert-tls server
+verify-x509-name fw01-openvpn name
+
+tls-version-min 1.2
+data-ciphers AES-256-GCM:AES-128-GCM
+
+auth-nocache
+verb 3
+
+<ca>
+<CA_CERTIFICATE_PEM>
+</ca>
+
+<cert>
+<WINDOWS_CLIENT_CERTIFICATE_PEM>
+</cert>
+
+<key>
+<WINDOWS_CLIENT_PRIVATE_KEY_PEM>
+</key>
+
+<tls-crypt>
+<TLS_CRYPT_KEY>
+</tls-crypt>
+
+# Non pubblicare un profilo reale contenente <key> o <tls-crypt>.
