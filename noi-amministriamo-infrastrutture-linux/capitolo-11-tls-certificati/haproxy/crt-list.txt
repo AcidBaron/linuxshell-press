@@ -1,0 +1,2 @@
+/etc/haproxy/certs/sito1.lab.test.pem sito1.lab.test
+/etc/haproxy/certs/sito2.lab.test.pem sito2.lab.test
