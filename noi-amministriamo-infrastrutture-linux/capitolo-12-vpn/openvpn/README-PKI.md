@@ -1,6 +1,6 @@
-# OpenVPN – PKI, client multipli e revoca
+# OpenVPN - PKI, client multipli e revoca
 
-Questa procedura riprende i comandi operativi del Capitolo 12. Le chiavi private e i profili reali non devono essere pubblicati.
+Questa procedura riprende i comandi operativi riportati nel Capitolo 12. Le chiavi private e i profili reali non devono essere versionati.
 
 ## Installazione
 
@@ -9,7 +9,7 @@ sudo apt update
 sudo apt install -y openvpn easy-rsa
 ```
 
-## Inizializzare la PKI e creare la CA
+## PKI e CA
 
 ```bash
 sudo install -d -m 700 /etc/openvpn/easy-rsa
@@ -32,11 +32,10 @@ sudo ./easyrsa \
     --req-cn="fw01-openvpn" \
     gen-req fw01-openvpn nopass
 
-sudo ./easyrsa \
-    sign-req server fw01-openvpn
+sudo ./easyrsa sign-req server fw01-openvpn
 ```
 
-## Primo certificato client e CRL
+## Primo client e CRL
 
 ```bash
 sudo ./easyrsa \
@@ -44,60 +43,39 @@ sudo ./easyrsa \
     --req-cn="windows-client01" \
     gen-req windows-client01 nopass
 
-sudo ./easyrsa \
-    sign-req client windows-client01
-
+sudo ./easyrsa sign-req client windows-client01
 sudo ./easyrsa gen-crl
 ```
 
-## File runtime server e tls-crypt
+## File runtime
 
 ```bash
 sudo install -d -o root -g root -m 755 /etc/openvpn/server
-
-sudo install -o root -g root -m 644 \
-    pki/ca.crt \
-    /etc/openvpn/server/ca.crt
-
-sudo install -o root -g root -m 644 \
-    pki/issued/fw01-openvpn.crt \
-    /etc/openvpn/server/fw01-openvpn.crt
-
-sudo install -o root -g root -m 600 \
-    pki/private/fw01-openvpn.key \
-    /etc/openvpn/server/fw01-openvpn.key
-
-sudo install -o root -g root -m 644 \
-    pki/crl.pem \
-    /etc/openvpn/server/crl.pem
-
-sudo openvpn --genkey tls-crypt \
-    /etc/openvpn/server/tls-crypt.key
-
+sudo install -o root -g root -m 644 pki/ca.crt /etc/openvpn/server/ca.crt
+sudo install -o root -g root -m 644 pki/issued/fw01-openvpn.crt /etc/openvpn/server/fw01-openvpn.crt
+sudo install -o root -g root -m 600 pki/private/fw01-openvpn.key /etc/openvpn/server/fw01-openvpn.key
+sudo install -o root -g root -m 644 pki/crl.pem /etc/openvpn/server/crl.pem
+sudo openvpn --genkey tls-crypt /etc/openvpn/server/tls-crypt.key
 sudo chmod 600 /etc/openvpn/server/tls-crypt.key
 ```
 
 ## Secondo client
 
 ```bash
-cd /etc/openvpn/easy-rsa
-
 sudo ./easyrsa \
     --batch \
     --req-cn="windows-client02" \
     gen-req windows-client02 nopass
 
-sudo ./easyrsa \
-    sign-req client windows-client02
+sudo ./easyrsa sign-req client windows-client02
 ```
 
-Nel laboratorio il secondo client ha ricevuto `10.99.20.3`, mentre `windows-client01` ha mantenuto `10.99.20.2`.
+Nel laboratorio il secondo client ha ricevuto `10.99.20.3`.
 
 ## Revoca
 
 ```bash
 cd /etc/openvpn/easy-rsa
-
 sudo ./easyrsa revoke windows-client02
 sudo ./easyrsa gen-crl
 
@@ -105,7 +83,11 @@ sudo install \
     -o root -g root -m 644 \
     pki/crl.pem \
     /etc/openvpn/server/crl.pem
+```
 
+Verifica:
+
+```bash
 sudo grep '^R' /etc/openvpn/easy-rsa/pki/index.txt
 
 sudo openssl crl \
@@ -114,5 +96,3 @@ sudo openssl crl \
     -text |
     grep -A3 'Revoked Certificates'
 ```
-
-Una nuova connessione di `windows-client02` deve essere rifiutata; `windows-client01` deve continuare a funzionare.
