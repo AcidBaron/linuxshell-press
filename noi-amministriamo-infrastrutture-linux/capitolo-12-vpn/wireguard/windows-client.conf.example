@@ -1,0 +1,15 @@
+# WireGuard for Windows - profilo di esempio senza secret
+[Interface]
+PrivateKey = <WINDOWS_CLIENT01_PRIVATE_KEY>
+Address = 10.99.10.2/24
+DNS = 10.77.0.10
+
+[Peer]
+PublicKey = <FW01_PUBLIC_KEY>
+Endpoint = 10.250.0.2:51820
+AllowedIPs = 10.99.10.0/24, 10.77.0.10/32
+PersistentKeepalive = 25
+
+# Il /32 e' specifico del laboratorio Hyper-V.
+# Per un client realmente remoto che deve raggiungere la LAB-LAN:
+# AllowedIPs = 10.99.10.0/24, 10.77.0.0/24
