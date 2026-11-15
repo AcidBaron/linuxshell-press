@@ -17,6 +17,7 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 8 – Samba](./capitolo-08-samba/)
 - [Capitolo 9 – Proxy forward con Squid](./capitolo-09-squid/)
 - [Capitolo 10 – Reverse proxy con Nginx e HAProxy](./capitolo-10-reverse-proxy/)
+- [Capitolo 11 – Proxy, TLS, certificati e pubblicazione dei servizi](./capitolo-11-tls-certificati/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
