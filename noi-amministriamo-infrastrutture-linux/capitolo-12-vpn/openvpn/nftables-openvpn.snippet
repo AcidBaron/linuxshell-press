@@ -1,4 +1,4 @@
-# Estratto dal /etc/nftables.conf finale validato.
+# Estratto dal /etc/nftables.conf finale validato su fw01.
 
 define OVPN_IF = "tun0"
 define OVPN_NET = 10.99.20.0/24
@@ -7,6 +7,4 @@ define OVPN_NET = 10.99.20.0/24
 iifname $WAN_IF udp dport 1194 accept
 
 # chain forward
-iifname $OVPN_IF oifname $LAN_IF \
-    ip saddr $OVPN_NET ip daddr $LAN_NET \
-    counter accept
+iifname $OVPN_IF oifname $LAN_IF ip saddr $OVPN_NET ip daddr $LAN_NET counter accept
