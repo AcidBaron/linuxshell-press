@@ -87,12 +87,14 @@ Connect-VMNetworkAdapter `
 - `linux/90-ch12-vpn-wan.yaml` — Netplan realmente usato su `fw01`.
 - `wireguard/wg0.conf.example` — `wg0.conf` reale sanificato.
 - `wireguard/windows-client.conf.example` — profilo Windows reale sanificato.
-- `wireguard/nftables-wireguard.snippet` — regole WireGuard estratte dallo stato finale di `/etc/nftables.conf`.
+- `nftables/nftables.conf` — configurazione finale completa realmente raccolta da `fw01`.
+- `wireguard/nftables-wireguard.snippet` — sole regole WireGuard estratte dallo stato finale di `/etc/nftables.conf`.
 - `openvpn/ch12.conf` — configurazione server realmente usata.
 - `openvpn/windows-client.ovpn.example` — struttura del profilo client validato con placeholder per materiale crittografico.
 - `openvpn/nftables-openvpn.snippet` — regole OpenVPN estratte dallo stato finale di `/etc/nftables.conf`.
 - `openvpn/README-PKI.md` — emissione, secondo client e revoca.
-- `bind/vpn-acl.snippet` — ACL `lab_clients` derivata dal `named.conf.options` finale.
+- `bind/named.conf.options` — configurazione BIND finale realmente raccolta da `infra01`.
+- `bind/vpn-acl.snippet` — sola ACL `lab_clients` estratta dal file finale.
 - `rollback/README.md` — checkpoint e rollback descritti nel capitolo.
 
 ## Verifiche principali
