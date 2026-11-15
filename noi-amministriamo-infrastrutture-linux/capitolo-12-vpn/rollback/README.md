@@ -1,13 +1,15 @@
-# Capitolo 12 – rollback
+# Capitolo 12 - rollback
 
-La via preferita nel laboratorio è il checkpoint Hyper-V.
+La via di rollback preferita nel laboratorio è il checkpoint Hyper-V.
 
 - checkpoint iniziale: `CH12-PRE-STABLE-VPN-WAN`
 - checkpoint finale: `CH12-VPN-FINAL-VALIDATED`
 
-Lavorare dalla connessione amministrativa LAB-LAN.
+## Ripristino manuale
 
-## 1. Riportare la WAN sullo switch precedente
+Lavorare mantenendo disponibile la connessione amministrativa LAB-LAN.
+
+Riportare la WAN di `fw01` sullo switch precedente:
 
 ```powershell
 Connect-VMNetworkAdapter `
@@ -16,19 +18,9 @@ Connect-VMNetworkAdapter `
     -SwitchName "Default Switch"
 ```
 
-## 2. Ripristinare Netplan
+Ripristinare la configurazione Netplan dal backup creato prima della modifica, quindi verificare route, Internet e DNS.
 
-Usare il backup `/etc/netplan.pre-ch12-vpn-wan`, quindi validare e applicare la configurazione ripristinata.
-
-```bash
-sudo netplan generate
-sudo netplan apply
-
-ip -4 -br addr show eth0
-ip route show default
-```
-
-## 3. Rimuovere WinNAT e VPN-WAN
+Rimuovere WinNAT e lo switch interno:
 
 ```powershell
 Remove-NetNat `
@@ -44,4 +36,4 @@ Remove-VMSwitch `
     -Force
 ```
 
-Dopo il rollback verificare route di default, Internet, DNS e listener VPN.
+Dopo il rollback verificare route di default, accesso Internet, DNS e listener VPN.
