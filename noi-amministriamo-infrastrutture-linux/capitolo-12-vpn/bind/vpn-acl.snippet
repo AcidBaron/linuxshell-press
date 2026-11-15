@@ -1,0 +1,19 @@
+# Subnet VPN da integrare nell'ACL BIND "lab_clients".
+acl "lab_clients" {
+    127.0.0.1;
+    ::1;
+
+    10.77.0.0/24;
+    10.99.10.0/24;
+    10.99.20.0/24;
+    10.77.10.0/24;
+    10.77.20.0/24;
+
+    fd3a:7b4c:2d91:1::/64;
+    fd3a:7b4c:2d91:10::/64;
+    fd3a:7b4c:2d91:20::/64;
+};
+
+# Verifica:
+# sudo named-checkconf
+# sudo rndc reload
