@@ -132,3 +132,11 @@ sudo openssl crl \
 ```
 
 La nuova connessione di `windows-client02` deve essere rifiutata mentre `windows-client01` continua a funzionare.
+
+## Riemissione dopo una revoca
+
+La revoca riguarda lo specifico certificato, non la persona o il dispositivo in modo permanente. Un certificato revocato non viene riattivato rimuovendolo dalla CRL.
+
+Se un client deve essere nuovamente autorizzato, si emettono una nuova chiave privata e un nuovo certificato, per esempio con una nuova identità come `windows-client02-r2`, e si costruisce un nuovo profilo `.ovpn`. Il certificato precedente resta revocato e tracciabile.
+
+Nel laboratorio questa riemissione non è stata rieseguita: emissione, costruzione del profilo e revoca sono già state validate separatamente. La sequenza è un buon candidato per automazione futura, ma nessuno script di automazione viene pubblicato finché non sarà provato in laboratorio.
