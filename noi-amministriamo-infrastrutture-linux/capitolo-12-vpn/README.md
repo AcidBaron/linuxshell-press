@@ -93,6 +93,7 @@ Connect-VMNetworkAdapter `
 - `openvpn/windows-client.ovpn.example` — struttura del profilo client validato con placeholder per materiale crittografico.
 - `openvpn/nftables-openvpn.snippet` — regole OpenVPN estratte dallo stato finale di `/etc/nftables.conf`.
 - `openvpn/README-PKI.md` — emissione, secondo client e revoca.
+- `bind/named.conf.options.wireguard` — stato BIND realmente validato dopo WireGuard e prima di OpenVPN.
 - `bind/named.conf.options` — configurazione BIND finale realmente raccolta da `infra01`.
 - `bind/vpn-acl.snippet` — sola ACL `lab_clients` estratta dal file finale.
 - `rollback/README.md` — checkpoint e rollback descritti nel capitolo.
