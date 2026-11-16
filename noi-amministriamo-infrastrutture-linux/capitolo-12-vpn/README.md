@@ -12,13 +12,15 @@ Il libro resta la fonte editoriale e didattica autorevole. I file qui pubblicati
 - OpenVPN: `tun0 = 10.99.20.1/24`, UDP/1194; client01 `10.99.20.2`.
 - OpenVPN client02: `10.99.20.3` prima della revoca.
 - `infra01 = 10.77.0.10`, DNS BIND.
-- Checkpoint finale: `CH12-VPN-FINAL-VALIDATED`.
+- `files01 = 10.77.0.20`, Samba 4.19.5, share `dati`.
+- Checkpoint capitolo base: `CH12-VPN-FINAL-VALIDATED`.
+- Checkpoint appendice Samba: `CH12-APPENDIX-SAMBA-VPN-VALIDATED` su `fw01` e `files01`.
 
 ## Tre scenari
 
 ### 1. Laboratorio realmente validato
 
-Il PC Windows del laboratorio è collegato anche direttamente alla LAB-LAN. Per dimostrare il percorso VPN senza deviare le normali sessioni amministrative, il client instrada nel tunnel soltanto `infra01`.
+Il PC Windows del laboratorio è collegato anche direttamente alla LAB-LAN. Per dimostrare il percorso VPN senza deviare le normali sessioni amministrative, il capitolo base instrada nel tunnel soltanto `infra01`.
 
 WireGuard:
 
@@ -31,6 +33,8 @@ OpenVPN:
 ```text
 push "route 10.77.0.10 255.255.255.255"
 ```
+
+L'appendice Samba estende deliberatamente il percorso anche a `files01 = 10.77.0.20` per provare un caso d'uso reale di smart working. La procedura completa è in `samba/README.md`.
 
 ### 2. Client realmente remoto
 
@@ -48,7 +52,7 @@ OpenVPN:
 push "route 10.77.0.0 255.255.255.0"
 ```
 
-Il tunnel non sostituisce le ACL applicative: firewall, BIND e gli altri servizi devono autorizzare esplicitamente le subnet VPN.
+Il tunnel non sostituisce le ACL applicative: firewall, BIND, Samba e gli altri servizi devono autorizzare esplicitamente le subnet VPN.
 
 ### 3. Server VPN dedicato
 
@@ -89,13 +93,14 @@ Connect-VMNetworkAdapter `
 - `wireguard/windows-client.conf.example` — profilo Windows reale sanificato.
 - `nftables/nftables.conf` — configurazione finale completa realmente raccolta da `fw01`.
 - `wireguard/nftables-wireguard.snippet` — sole regole WireGuard estratte dallo stato finale di `/etc/nftables.conf`.
-- `openvpn/ch12.conf` — configurazione server realmente usata.
+- `openvpn/ch12.conf` — configurazione server realmente usata, inclusa la route `/32` verso `files01` validata nell'appendice Samba.
 - `openvpn/windows-client.ovpn.example` — struttura del profilo client validato con placeholder per materiale crittografico.
 - `openvpn/nftables-openvpn.snippet` — regole OpenVPN estratte dallo stato finale di `/etc/nftables.conf`.
 - `openvpn/README-PKI.md` — emissione, secondo client e revoca.
 - `bind/named.conf.options.wireguard` — stato BIND realmente validato dopo WireGuard e prima di OpenVPN.
 - `bind/named.conf.options` — configurazione BIND finale realmente raccolta da `infra01`.
 - `bind/vpn-acl.snippet` — sola ACL `lab_clients` estratta dal file finale.
+- `samba/README.md` — appendice operativa validata: accesso a `\\files01.lab.test\dati` via WireGuard e OpenVPN, UFW e verifiche end-to-end.
 - `rollback/README.md` — checkpoint e rollback descritti nel capitolo.
 
 ## Verifiche principali
@@ -122,7 +127,7 @@ sudo ss -lunp | grep ':1194\b'
 sudo journalctl -u openvpn-server@ch12 -n 30 --no-pager
 ```
 
-Non esiste un file `verify-vpn.sh` del laboratorio: le verifiche sono i comandi riportati nel capitolo e qui sopra.
+Non esiste un file `verify-vpn.sh` del laboratorio: le verifiche sono i comandi riportati nel capitolo, nell'appendice Samba e nei README associati.
 
 ## Materiale da non versionare
 
