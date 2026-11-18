@@ -1,0 +1,5 @@
+dn: cn=labusers,ou=Groups,dc=lab,dc=test
+objectClass: top
+objectClass: posixGroup
+cn: labusers
+gidNumber: 20001
