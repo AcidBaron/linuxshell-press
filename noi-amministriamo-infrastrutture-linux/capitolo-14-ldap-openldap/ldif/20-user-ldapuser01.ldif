@@ -1,0 +1,13 @@
+dn: uid=ldapuser01,ou=People,dc=lab,dc=test
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+uid: ldapuser01
+cn: LDAP User 01
+sn: User01
+uidNumber: 20001
+gidNumber: 20001
+homeDirectory: /home/ldapuser01
+loginShell: /bin/bash
