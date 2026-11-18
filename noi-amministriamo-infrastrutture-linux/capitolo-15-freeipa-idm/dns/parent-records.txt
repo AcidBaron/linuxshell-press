@@ -1,0 +1,15 @@
+# Capitolo 15 - FreeIPA / IdM
+# Record verificati nel laboratorio.
+#
+# Inserire i record nelle rispettive zone BIND e incrementare il seriale SOA.
+
+# /etc/bind/db.lab.test
+# Record A del server FreeIPA, creato prima di ipa-server-install:
+ipa01.idm       IN A        10.77.0.70
+
+# Delega del sottodominio, aggiunta dopo che il DNS integrato FreeIPA è operativo:
+idm             IN NS       ipa01.idm.lab.test.
+
+# /etc/bind/db.10.77.0
+# Record PTR del server FreeIPA:
+70              IN PTR      ipa01.idm.lab.test.
