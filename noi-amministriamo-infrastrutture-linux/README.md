@@ -19,6 +19,9 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 10 – Reverse proxy con Nginx e HAProxy](./capitolo-10-reverse-proxy/)
 - [Capitolo 11 – Proxy, TLS, certificati e pubblicazione dei servizi](./capitolo-11-tls-certificati/)
 - [Capitolo 12 – VPN con WireGuard e OpenVPN](./capitolo-12-vpn/)
+- [Capitolo 13 – Directory e identità centralizzate](./capitolo-13-identita-centralizzate/)
+- [Capitolo 14 – LDAP e OpenLDAP: una directory essenziale](./capitolo-14-ldap-openldap/)
+- [Capitolo 15 – FreeIPA e Identity Management: identità, Kerberos e policy integrate](./capitolo-15-freeipa-idm/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
