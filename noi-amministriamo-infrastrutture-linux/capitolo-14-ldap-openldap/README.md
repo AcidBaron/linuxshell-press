@@ -94,15 +94,15 @@ I file sono in `ldif/`.
 ```bash
 ldapadd -x -H ldap://127.0.0.1 \
     -D "cn=admin,dc=lab,dc=test" -w 123 \
-    -f 00-ou.ldif
+    -f ldif/00-ou.ldif
 
 ldapadd -x -H ldap://127.0.0.1 \
     -D "cn=admin,dc=lab,dc=test" -w 123 \
-    -f 10-group-labusers.ldif
+    -f ldif/10-group-labusers.ldif
 
 ldapadd -x -H ldap://127.0.0.1 \
     -D "cn=admin,dc=lab,dc=test" -w 123 \
-    -f 20-user-ldapuser01.ldif
+    -f ldif/20-user-ldapuser01.ldif
 
 ldappasswd \
     -x \
@@ -234,11 +234,13 @@ sudo apt update
 sudo apt install -y sssd-ldap ldap-utils
 ```
 
-Il file validato è disponibile in `sssd/sssd.conf`.
-
-Installarlo come `/etc/sssd/sssd.conf`, proprietario `root:root`, permessi `0600`, quindi:
+Il file validato è disponibile in `sssd/sssd.conf`. Dalla directory del capitolo installarlo così:
 
 ```bash
+sudo install -o root -g root -m 0600 \\
+    sssd/sssd.conf \\
+    /etc/sssd/sssd.conf
+
 sudo systemctl restart sssd
 systemctl is-active sssd
 ```
