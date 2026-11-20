@@ -21,9 +21,13 @@ Backup creati durante il laboratorio:
 /etc/bind/named.conf.local.pre-ch16-ad
 ```
 
-Dopo il ripristino dei file necessari:
+Per annullare tutte le modifiche DNS introdotte dal Capitolo 16:
 
 ```bash
+sudo cp -a /etc/bind/db.lab.test.pre-ch16-ad /etc/bind/db.lab.test
+sudo cp -a /etc/bind/db.10.77.0.pre-ch16-ad /etc/bind/db.10.77.0
+sudo cp -a /etc/bind/named.conf.local.pre-ch16-ad /etc/bind/named.conf.local
+
 sudo named-checkzone lab.test /etc/bind/db.lab.test
 sudo named-checkconf
 sudo rndc reconfig
