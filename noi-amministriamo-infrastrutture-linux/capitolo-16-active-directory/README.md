@@ -2,322 +2,273 @@
 
 Materiale operativo del Capitolo 16 di **Noi Amministriamo Infrastrutture Linux**.
 
-Questa prima pubblicazione copre esclusivamente la preparazione del server Windows che diventerà il primo controller di dominio. Lo stato qui documentato è ancora **pre-AD DS**: `dc01` è una macchina standalone, il DNS parent non è stato modificato e il ruolo Active Directory Domain Services non è ancora installato.
-
-Verifica del laboratorio per questa fase: **19 novembre 2026**.
+Il laboratorio è stato completato e validato il **20 novembre 2026**. La catena finale comprende il primo Domain Controller Windows Server 2025, DNS Active Directory per `ad.lab.test`, integrazione con il DNS parent BIND su `infra01` e join di `linux-client01` tramite `realmd`, `adcli` e SSSD.
 
 ## Perimetro validato
 
-- VM: `dc01`
-- Sistema: Windows Server 2025 Standard Evaluation
-- Installazione: Server Core
-- Hyper-V: Generation 2
-- vCPU: 2
-- RAM dinamica: 2–8 GB, startup 4 GB
-- VHDX dinamico: 40 GB
-- Switch: `LAB-LAN`
-- IPv4: `10.77.0.80/24`
+- Domain Controller: `dc01.ad.lab.test`
+- Dominio DNS: `ad.lab.test`
+- Nome NetBIOS: `AD`
+- Sistema: Windows Server 2025 Standard Evaluation, Server Core
+- Livello funzionale: `Windows2025Domain`
+- IPv4 di `dc01`: `10.77.0.80/24`
 - Gateway: `10.77.0.1`
-- DNS iniziale: `10.77.0.10` (`infra01`)
-- Profilo rete Windows: `Private`
-- Time zone: `W. Europe Standard Time`
-- Accesso remoto: OpenSSH con PowerShell
-- Autenticazione SSH validata: password + chiave Ed25519
-- Futuro dominio AD: `ad.lab.test`
-- Stato AD DS: **non ancora installato**
+- DNS AD: integrato su `dc01`
+- DNS parent: `infra01` — `10.77.0.10`, BIND autorevole per `lab.test`
+- Client Linux: `linux-client01`
+- Join Linux: `realmd` + `adcli` + SSSD
+- Provider SSSD mantenuti in parallelo: OpenLDAP `lab.test` + Active Directory `ad.lab.test`
+- Utente AD di prova: `aduser01@ad.lab.test`
+- Home automatica al primo login: validata
+- Checkpoint finale: `CH16-AD-LAB-COMPLETE` su `dc01` e `linux-client01`
 
-## Prerequisiti
+## File operativi
 
-Devono già esistere:
+- `powershell/01-create-dc01-vm.ps1` — creazione VM Hyper-V.
+- `powershell/02-configure-dc01-base.ps1` — hostname, rete, DNS iniziale, timezone e OpenSSH.
+- `powershell/03-authorize-admin-ssh-key.ps1` — installazione della sola chiave pubblica Ed25519 per Administrator.
+- `powershell/04-install-promote-ad.ps1` — installazione AD DS e promozione a prima foresta `ad.lab.test`.
+- `powershell/05-fix-openssh-domain-firewall.ps1` — adeguamento della regola OpenSSH dopo il passaggio a `DomainAuthenticated`.
+- `config/infra01-bind-ch16-snippets.conf` — record A/PTR, delega e forward zone da integrare nei file BIND esistenti.
+- `linux/01-join-ad.sh` — pacchetti, discovery, join, verifica SSSD e `pam_mkhomedir`.
+- `rollback/README.md` — rollback dei tre componenti principali.
 
-- host Windows 11 con Hyper-V operativo;
-- switch interno Hyper-V `LAB-LAN`;
-- `fw01` — `10.77.0.1/24`, gateway della LAB-LAN;
-- `infra01` — `10.77.0.10/24`, DNS BIND autorevole per `lab.test`;
-- rete IPv4 `10.77.0.0/24`;
-- accesso a Internet durante installazione e attivazione dell'edizione Evaluation;
-- ISO italiana di Windows Server 2025 Standard Evaluation conservata sull'host Hyper-V.
+## 1. Preparazione di dc01
 
-Il DNS iniziale di `dc01` punta a `infra01`. La relazione tra il DNS parent `lab.test` e il futuro DNS Active Directory di `ad.lab.test` verrà costruita soltanto dopo la promozione del controller di dominio.
+La prima parte del capitolo installa Windows Server 2025 Server Core e prepara `dc01` come server standalone con:
 
-## 1. Creare la VM dc01
-
-**Macchina:** host Windows 11  
-**Shell:** PowerShell amministrativa
-
-Il blocco PowerShell validato è disponibile in:
-
-`powershell/01-create-dc01-vm.ps1`
-
-Prima dell'esecuzione verificare il valore di `$IsoPath`.
-
-La VM viene creata con:
-
-- Generation 2;
 - 2 vCPU;
 - RAM dinamica 2–8 GB, startup 4 GB;
 - VHDX dinamico da 40 GB;
-- scheda collegata a `LAB-LAN`;
-- checkpoint automatici disabilitati;
-- ISO collegata come primo dispositivo di boot.
+- switch `LAB-LAN`;
+- IPv4 `10.77.0.80/24`;
+- DNS iniziale `10.77.0.10` (`infra01`);
+- timezone `W. Europe Standard Time`;
+- OpenSSH con PowerShell;
+- accesso con password e chiave Ed25519.
 
-## 2. Installare Windows Server 2025 Evaluation
+La chiave privata SSH resta esclusivamente sul PC amministrativo e non viene versionata.
 
-Avviare la VM e aprire la console Hyper-V:
+## 2. Preparare il DNS parent prima della promozione
 
-```powershell
-Start-VM "dc01"
-vmconnect.exe localhost dc01
+Su `infra01` salvare le zone interessate:
+
+```bash
+sudo cp -a /etc/bind/db.lab.test /etc/bind/db.lab.test.pre-ch16-ad
+sudo cp -a /etc/bind/db.10.77.0 /etc/bind/db.10.77.0.pre-ch16-ad
 ```
 
-Durante il setup scegliere **Windows Server 2025 Standard Evaluation** senza Desktop Experience, cioè Server Core.
+Integrare i record presenti in `config/infra01-bind-ch16-snippets.conf`, incrementare il seriale SOA e validare:
 
-### Troubleshooting — il boot dalla ISO non parte
+```bash
+sudo named-checkzone lab.test /etc/bind/db.lab.test
+sudo named-checkzone 0.77.10.in-addr.arpa /etc/bind/db.10.77.0
+sudo rndc reload
+```
 
-Con una VM Generation 2 il prompt:
+Prima della promozione è stato creato il checkpoint temporaneo:
+
+```powershell
+Checkpoint-VM `
+    -Name "dc01" `
+    -SnapshotName "CH16-PRE-ADDS-PROMOTION"
+```
+
+## 3. Installare AD DS e promuovere dc01
+
+Eseguire su `dc01`:
+
+`powershell/04-install-promote-ad.ps1`
+
+La promozione crea foresta `ad.lab.test`, nome NetBIOS `AD`, DNS integrato, primo Domain Controller e Global Catalog.
+
+`-CreateDnsDelegation:$false` è intenzionale: il parent `lab.test` è gestito da BIND e viene configurato manualmente dopo la validazione del DNS Windows.
+
+La password DSRM usata nel laboratorio è `123456Aa!` ed è **LAB ONLY**.
+
+## 4. Troubleshooting — SSH non raggiungibile dopo la promozione
+
+Dopo il riavvio la rete passa da `Private` a `DomainAuthenticated`. La regola OpenSSH iniziale era limitata a `Private`, quindi TCP/22 può andare in timeout anche con `sshd` in esecuzione.
+
+Usare PowerShell Direct e poi:
+
+`powershell/05-fix-openssh-domain-firewall.ps1`
+
+La regola finale è valida per `Domain,Private`. L'accesso `ssh dc01` con la chiave Ed25519 già configurata torna operativo senza rigenerare le chiavi.
+
+## 5. Verificare dominio e DNS Active Directory
+
+Su `dc01`:
+
+```powershell
+Get-ADDomain |
+    Select-Object DNSRoot,NetBIOSName,DomainMode
+
+Resolve-DnsName `
+    _ldap._tcp.dc._msdcs.ad.lab.test `
+    -Type SRV `
+    -Server 127.0.0.1
+
+Resolve-DnsName `
+    _kerberos._tcp.ad.lab.test `
+    -Type SRV `
+    -Server 127.0.0.1
+```
+
+Stato validato: `ad.lab.test`, NetBIOS `AD`, `Windows2025Domain`; LDAP SRV sulla porta 389 e Kerberos SRV sulla porta 88 verso `dc01.ad.lab.test`.
+
+## 6. Integrare il sottodominio AD con BIND
+
+Prima delle modifiche definitive:
+
+```bash
+sudo cp -a /etc/bind/db.lab.test /etc/bind/db.lab.test.pre-ch16-ad-delegation
+sudo cp -a /etc/bind/named.conf.local /etc/bind/named.conf.local.pre-ch16-ad
+```
+
+Integrare la delega NS e la forward zone riportate in `config/infra01-bind-ch16-snippets.conf`.
+
+```bash
+sudo named-checkzone lab.test /etc/bind/db.lab.test
+sudo named-checkconf
+sudo rndc reconfig
+sudo rndc reload lab.test
+sudo rndc flushtree ad.lab.test
+```
+
+Test funzionale:
+
+```bash
+dig @127.0.0.1     _ldap._tcp.dc._msdcs.ad.lab.test SRV     +comments +answer
+```
+
+Risultato validato: `NOERROR` con SRV `0 100 389 dc01.ad.lab.test.`.
+
+### Troubleshooting — BIND restituisce ancora NXDOMAIN
+
+Nel laboratorio il file `db.lab.test` era già al seriale `2026112002`, ma BIND continuava a servire la copia runtime con seriale `2026112001`. Un `dig` diretto a `10.77.0.80` restituiva il record corretto, quindi il DNS Windows era sano.
+
+La correzione è stata:
+
+```bash
+sudo rndc reconfig
+sudo rndc reload lab.test
+sudo rndc flushtree ad.lab.test
+```
+
+## 7. Preparare linux-client01
+
+Per il laboratorio AD è stato ripristinato `CH15-PRE-FREEIPA-ENROLLMENT`, che mantiene la configurazione OpenLDAP/SSSD del Capitolo 14 ma precede l'enrollment FreeIPA. `CH15-FREEIPA-LAB-COMPLETE` viene conservato.
+
+```powershell
+Stop-VM -Name "linux-client01"
+
+Restore-VMSnapshot `
+    -VMName "linux-client01" `
+    -Name "CH15-PRE-FREEIPA-ENROLLMENT" `
+    -Confirm:$false
+
+Start-VM -Name "linux-client01"
+```
+
+La baseline validata conserva `[domain/lab.test]`, `id_provider = ldap` e `ldap_uri = ldap://ldap01.lab.test`, con `ldapuser01` ancora risolvibile.
+
+## 8. Discovery e join Linux
+
+La procedura validata è raccolta in `linux/01-join-ad.sh`.
+
+```bash
+sudo realm -v discover ad.lab.test
+sudo realm join -v -U Administrator ad.lab.test
+```
+
+Il join termina con:
 
 ```text
-Press any key to boot from CD or DVD
+Successfully enrolled machine in realm
 ```
 
-rimane disponibile per pochissimo tempo. Se non viene premuto un tasto, il firmware può mostrare `The boot loader failed`.
+I messaggi `Encryption type [3] not permitted` e `Encryption type [1] not permitted` sono risultati non bloccanti: riguardano tipi Kerberos legacy e l'enrollment termina correttamente.
 
-Nel laboratorio non era un problema della ISO né dell'ordine di boot: è bastato riavviare la VM e premere immediatamente un tasto quando compare il prompt.
+## 9. Convivenza OpenLDAP + Active Directory in SSSD
 
-### Nota operativa — conferma della password Administrator
+Stato finale:
 
-Durante il primo setup di Server Core il tasto Invio non spostava correttamente il focus dal campo della prima password al campo di conferma.
+```text
+[sssd]
+domains = lab.test, ad.lab.test
 
-Nel laboratorio è stato necessario usare i **tasti freccia** per portare il focus sul campo successivo e completare la conferma. È una particolarità dell'interfaccia di setup, non un errore della password.
+[domain/lab.test]
+id_provider = ldap
+ldap_uri = ldap://ldap01.lab.test
 
-La password di `Administrator` è una credenziale dedicata e **non viene pubblicata nel repository**.
+[domain/ad.lab.test]
+id_provider = ad
+ad_domain = ad.lab.test
+krb5_realm = AD.LAB.TEST
+```
 
-## 3. Usare PowerShell Direct per la configurazione iniziale
+Verifiche validate:
 
-Prima che SSH sia disponibile, dall'host Hyper-V:
+```bash
+getent passwd ldapuser01
+id 'Administrator@ad.lab.test'
+```
+
+Entrambi i provider rispondono correttamente.
+
+## 10. Utente AD di prova e login Linux
+
+Su `dc01` è stato creato `aduser01` con password didattica **LAB ONLY** `123456Aa!`.
 
 ```powershell
-$cred = Get-Credential
+$password = ConvertTo-SecureString `
+    "123456Aa!" `
+    -AsPlainText `
+    -Force
 
-Enter-PSSession `
+New-ADUser `
+    -Name "AD User 01" `
+    -SamAccountName "aduser01" `
+    -UserPrincipalName "aduser01@ad.lab.test" `
+    -AccountPassword $password `
+    -Enabled $true `
+    -ChangePasswordAtLogon $false
+```
+
+Sul client:
+
+```bash
+id 'aduser01@ad.lab.test'
+sudo pam-auth-update --enable mkhomedir
+sudo systemctl restart sssd
+su - 'aduser01@ad.lab.test'
+```
+
+Al primo login viene creata `/home/aduser01@ad.lab.test`.
+
+## 11. Stato finale e checkpoint
+
+```powershell
+Checkpoint-VM `
+    -Name "dc01" `
+    -SnapshotName "CH16-AD-LAB-COMPLETE"
+
+Checkpoint-VM `
+    -Name "linux-client01" `
+    -SnapshotName "CH16-AD-LAB-COMPLETE"
+
+Remove-VMSnapshot `
     -VMName "dc01" `
-    -Credential $cred
+    -Name "CH16-PRE-ADDS-PROMOTION"
 ```
 
-PowerShell Direct non dipende dalla connettività IP tra host e guest e resta anche un percorso di emergenza locale.
+`linux-client01` resta nello stato finale **AD + OpenLDAP**. I checkpoint del Capitolo 15 vengono mantenuti.
 
-## 4. Configurare hostname, rete e OpenSSH
+## Credenziali e segreti
 
-**Macchina:** `dc01`  
-**Collegamento consigliato:** PowerShell Direct  
-**Shell:** PowerShell
+Le password dichiaratamente didattiche possono essere pubblicate e devono essere marcate **LAB ONLY** quando utili alla replicabilità.
 
-Il blocco operativo validato è raccolto in:
+Restano esclusi dal repository: chiavi private SSH, chiavi private di certificati, token, secret crittografici, credenziali reali, file personali `known_hosts` e checkpoint binari.
 
-`powershell/02-configure-dc01-base.ps1`
-
-Lo script:
-
-- individua la NIC attiva;
-- imposta il nome `dc01`;
-- disabilita DHCP;
-- assegna `10.77.0.80/24`;
-- imposta il gateway `10.77.0.1`;
-- imposta il DNS iniziale `10.77.0.10`;
-- imposta `W. Europe Standard Time`;
-- avvia `sshd` e lo rende automatico;
-- verifica/crea la regola firewall TCP/22;
-- imposta PowerShell come shell predefinita di OpenSSH;
-- porta il profilo della rete attiva a `Private`.
-
-La rinomina del computer richiede un riavvio per diventare effettiva. Il file non esegue automaticamente il reboot.
-
-Verifica minima:
-
-```powershell
-Get-Service sshd
-Get-NetTCPConnection -LocalPort 22 -State Listen
-
-Get-NetConnectionProfile |
-    Format-Table InterfaceAlias,Name,NetworkCategory,IPv4Connectivity
-```
-
-### Troubleshooting — SSH non raggiungibile
-
-Nel laboratorio la scheda Ethernet risultava inizialmente associata a una rete non identificata con profilo `Public`. La regola OpenSSH era invece prevista per il profilo `Private`, quindi il collegamento dall'host andava in timeout.
-
-La correzione è:
-
-```powershell
-Set-NetConnectionProfile `
-    -InterfaceAlias "Ethernet" `
-    -NetworkCategory Private
-```
-
-Dopo il cambio di profilo la sessione SSH ha funzionato regolarmente.
-
-## 5. Verificare il primo accesso SSH
-
-Dal PC amministrativo:
-
-```powershell
-ssh Administrator@10.77.0.80
-```
-
-Dopo il login:
-
-```powershell
-hostname
-```
-
-Risultato atteso:
-
-```text
-dc01
-```
-
-## 6. Installare la chiave pubblica Ed25519 per Administrator
-
-La coppia di chiavi viene generata sul PC amministrativo:
-
-```powershell
-$sshDir = "$env:USERPROFILE\.ssh"
-
-New-Item `
-    -ItemType Directory `
-    -Path $sshDir `
-    -Force | Out-Null
-
-ssh-keygen `
-    -t ed25519 `
-    -f "$sshDir\dc01_ed25519" `
-    -C "dc01-lab"
-```
-
-La chiave privata `dc01_ed25519` resta esclusivamente sul PC amministrativo.
-
-Trasferire sul server soltanto la chiave pubblica:
-
-```powershell
-scp `
-    "$env:USERPROFILE\.ssh\dc01_ed25519.pub" `
-    Administrator@10.77.0.80:dc01_ed25519.pub
-```
-
-Su `dc01`, durante l'ultima sessione autenticata con password, eseguire:
-
-`powershell/03-authorize-admin-ssh-key.ps1`
-
-Il file installa la chiave in:
-
-```text
-C:\ProgramData\ssh\administrators_authorized_keys
-```
-
-e imposta ACL limitate a:
-
-```text
-NT AUTHORITY\SYSTEM:(F)
-BUILTIN\Administrators:(F)
-```
-
-Prima di chiudere la sessione esistente, da un secondo terminale:
-
-```powershell
-ssh `
-    -i "$env:USERPROFILE\.ssh\dc01_ed25519" `
-    -o IdentitiesOnly=yes `
-    Administrator@10.77.0.80
-```
-
-Il test è positivo quando la sessione PowerShell si apre senza richiedere la password.
-
-L'autenticazione a password resta abilitata come fallback durante la successiva costruzione del Domain Controller.
-
-## 7. Alias SSH opzionale sul client
-
-Nel file:
-
-```text
-%USERPROFILE%\.ssh\config
-```
-
-può essere aggiunta la voce:
-
-```text
-Host dc01
-    HostName 10.77.0.80
-    User Administrator
-    IdentityFile ~/.ssh/dc01_ed25519
-    IdentitiesOnly yes
-```
-
-Il collegamento diventa quindi:
-
-```powershell
-ssh dc01
-```
-
-## 8. Attivare e verificare Windows Server Evaluation
-
-In una sessione SSH, `slmgr.vbs` eseguito direttamente può non produrre testo in console. Per forzare l'output testuale usare `cscript.exe`:
-
-```powershell
-cscript.exe //nologo C:\Windows\System32\slmgr.vbs /dlv
-cscript.exe //nologo C:\Windows\System32\slmgr.vbs /xpr
-```
-
-Nel laboratorio lo stato validato è:
-
-- edizione: `ServerStandardEval`;
-- licenza: attiva;
-- scadenza Evaluation: **18/05/2027 18:07:30**.
-
-### Troubleshooting — slmgr.vbs non mostra output via SSH
-
-I comandi:
-
-```powershell
-slmgr.vbs /dlv
-slmgr.vbs /ato
-```
-
-non hanno mostrato output nella sessione remota.
-
-La forma console corretta è:
-
-```powershell
-cscript.exe //nologo C:\Windows\System32\slmgr.vbs /dlv
-cscript.exe //nologo C:\Windows\System32\slmgr.vbs /ato
-cscript.exe //nologo C:\Windows\System32\slmgr.vbs /xpr
-```
-
-## Stato finale di questa prima fase
-
-Al termine di questa pubblicazione GitHub lo stato validato è:
-
-- `dc01` installato e configurato;
-- IP statico `10.77.0.80/24`;
-- DNS iniziale `10.77.0.10`;
-- profilo rete `Private`;
-- OpenSSH attivo;
-- accesso PowerShell via SSH verificato;
-- autenticazione con chiave Ed25519 verificata;
-- Evaluation attiva;
-- DNS parent **non ancora modificato**;
-- AD DS **non ancora installato**.
-
-La fase successiva inizierà con la registrazione di `dc01.ad.lab.test` nel DNS parent su `infra01`, seguita dal checkpoint pre-promozione e dall'installazione di AD DS. Questi materiali verranno aggiunti soltanto dopo la validazione reale del laboratorio.
-
-## Materiale escluso dal repository
-
-Non versionare:
-
-- password dell'account `Administrator`;
-- `dc01_ed25519`, la chiave privata SSH;
-- chiavi private o secret futuri del dominio;
-- file `known_hosts` personali;
-- backup o checkpoint contenenti credenziali;
-- configurazioni utente contenenti dati non necessari alla replicabilità.
-
-La chiave pubblica generata per uno specifico PC amministrativo non è necessaria nel repository: viene creata durante il laboratorio.
+Le credenziali LAB ONLY non devono essere riutilizzate in produzione.
