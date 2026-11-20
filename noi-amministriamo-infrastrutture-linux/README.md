@@ -22,6 +22,7 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 13 – Directory e identità centralizzate](./capitolo-13-identita-centralizzate/)
 - [Capitolo 14 – LDAP e OpenLDAP: una directory essenziale](./capitolo-14-ldap-openldap/)
 - [Capitolo 15 – FreeIPA e Identity Management: identità, Kerberos e policy integrate](./capitolo-15-freeipa-idm/)
+- [Capitolo 16 – Active Directory e integrazione Linux](./capitolo-16-active-directory/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
