@@ -58,7 +58,54 @@ sudo cp -a /etc/bind/db.lab.test /etc/bind/db.lab.test.pre-ch16-ad
 sudo cp -a /etc/bind/db.10.77.0 /etc/bind/db.10.77.0.pre-ch16-ad
 ```
 
-Integrare i record presenti in `config/infra01-bind-ch16-snippets.conf`, incrementare il seriale SOA e validare:
+Aggiungere i record A e PTR con gli stessi comandi usati nel laboratorio:
+
+```bash
+sudo tee -a /etc/bind/db.lab.test >/dev/null <<'EOF'
+; Capitolo 16 - Active Directory
+dc01.ad         IN A        10.77.0.80
+EOF
+
+sudo tee -a /etc/bind/db.10.77.0 >/dev/null <<'EOF'
+; Capitolo 16 - Active Directory
+80              IN PTR      dc01.ad.lab.test.
+EOF
+```
+
+Incrementare i seriali SOA delle due zone:
+
+```bash
+sudo python3 - <<'PY'
+from pathlib import Path
+import re
+from datetime import datetime
+
+paths = [
+    Path("/etc/bind/db.lab.test"),
+    Path("/etc/bind/db.10.77.0"),
+]
+
+today = datetime.now().strftime("%Y%m%d")
+
+for path in paths:
+    text = path.read_text()
+    m = re.search(r'(\d{10})(\s*;\s*Serial\b)', text, re.I)
+    if not m:
+        raise SystemExit(f"Serial SOA non trovato in {path}")
+
+    old = m.group(1)
+    if old.startswith(today):
+        new = str(int(old) + 1)
+    else:
+        new = today + "01"
+
+    text = text[:m.start(1)] + new + text[m.end(1):]
+    path.write_text(text)
+    print(f"{path}: {old} -> {new}")
+PY
+```
+
+Validare e ricaricare:
 
 ```bash
 sudo named-checkzone lab.test /etc/bind/db.lab.test
@@ -126,7 +173,62 @@ sudo cp -a /etc/bind/db.lab.test /etc/bind/db.lab.test.pre-ch16-ad-delegation
 sudo cp -a /etc/bind/named.conf.local /etc/bind/named.conf.local.pre-ch16-ad
 ```
 
-Integrare la delega NS e la forward zone riportate in `config/infra01-bind-ch16-snippets.conf`.
+Aggiungere la delega NS:
+
+```bash
+sudo tee -a /etc/bind/db.lab.test >/dev/null <<'EOF'
+
+; Capitolo 16 - delega DNS Active Directory
+ad              IN NS       dc01.ad.lab.test.
+EOF
+```
+
+Aggiungere la forward zone specifica:
+
+```bash
+sudo tee -a /etc/bind/named.conf.local >/dev/null <<'EOF'
+
+zone "ad.lab.test" {
+    type forward;
+    forward only;
+    forwarders {
+        10.77.0.80;
+    };
+};
+EOF
+```
+
+Incrementare il seriale della sola zona `lab.test`:
+
+```bash
+sudo python3 - <<'PY'
+from pathlib import Path
+import re
+from datetime import datetime
+
+path = Path("/etc/bind/db.lab.test")
+text = path.read_text()
+
+m = re.search(r'(\d{10})(\s*;\s*Serial\b)', text, re.I)
+if not m:
+    raise SystemExit("Serial SOA non trovato")
+
+old = m.group(1)
+today = datetime.now().strftime("%Y%m%d")
+
+if old.startswith(today):
+    new = str(int(old) + 1)
+else:
+    new = today + "01"
+
+text = text[:m.start(1)] + new + text[m.end(1):]
+path.write_text(text)
+
+print(f"{old} -> {new}")
+PY
+```
+
+Validare, rileggere la configurazione e pulire la cache negativa:
 
 ```bash
 sudo named-checkzone lab.test /etc/bind/db.lab.test
