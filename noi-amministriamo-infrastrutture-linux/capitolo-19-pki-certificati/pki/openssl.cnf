@@ -1,0 +1,45 @@
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+dir               = /etc/ssl/linuxshell-lab-ca/issuing-ca
+certs             = $dir/certs
+crl_dir           = $dir/crl
+new_certs_dir     = $dir/newcerts
+database          = $dir/index.txt
+serial            = $dir/serial
+crlnumber         = $dir/crlnumber
+
+certificate       = $dir/certs/linuxshell-lab-issuing-ca.crt
+private_key       = $dir/private/linuxshell-lab-issuing-ca.key
+
+default_md        = sha256
+default_days      = 397
+default_crl_days  = 30
+
+policy            = policy_loose
+email_in_dn       = no
+unique_subject    = no
+copy_extensions   = copy
+
+x509_extensions   = server_cert
+crl_extensions    = crl_ext
+
+[ policy_loose ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ server_cert ]
+basicConstraints        = critical, CA:false
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid,issuer
+keyUsage                = critical, digitalSignature, keyEncipherment
+extendedKeyUsage        = serverAuth
+
+[ crl_ext ]
+authorityKeyIdentifier  = keyid:always
