@@ -25,6 +25,7 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 16 – Active Directory e integrazione Linux](./capitolo-16-active-directory/)
 - [Capitolo 17 – SSSD, realmd e Kerberos](./capitolo-17-sssd-realmd-kerberos/)
 - [Capitolo 18 – Trust fra domini Linux e Active Directory](./capitolo-18-trust-linux-active-directory/)
+- [Capitolo 19 – PKI e gestione dei certificati](./capitolo-19-pki-certificati/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
