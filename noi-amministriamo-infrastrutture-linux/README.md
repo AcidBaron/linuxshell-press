@@ -28,6 +28,7 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 19 – PKI e gestione dei certificati](./capitolo-19-pki-certificati/)
 - [Capitolo 20 – Servizi self-hosted: Nextcloud](./capitolo-20-nextcloud/)
 - [Capitolo 21 – Alta disponibilità: concetti e architetture](./capitolo-21-alta-disponibilita/)
+- [Capitolo 22 – Keepalived e VRRP](./capitolo-22-keepalived-vrrp/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
