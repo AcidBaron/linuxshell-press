@@ -18,11 +18,11 @@ Cluster: `ch23-cluster`, Corosync + Pacemaker 2.1.6, PCS 0.11.7. Due nodi online
 
 - `ch23-demo` — `ocf:pacemaker:Dummy`, monitor ogni 10 s, Started su `dhcp-client01`.
 - `ch23-vip` — `ocf:heartbeat:IPaddr2`, `ip=10.77.0.91 cidr_netmask=24 nic=eth0`, monitor ogni 10 s, Started su `linux-client01`.
-- Nessun vincolo di collocazione residuo.
+- Nessun vincolo di collocazione residuo **nel checkpoint finale del Capitolo 23** (prima del laboratorio parallelo R2).
 - `stonith-enabled=false` **solo per questo laboratorio didattico**: non è una configurazione HA sicura per produzione.
 - `corosync` e `pacemaker` risultavano `active/disabled`; `pcsd` `active/enabled`.
 
-Il capitolo è stato chiuso prima del laboratorio parallelo di fencing. Successivamente è stata registrata la risorsa sperimentale `ch23-fence-hyperv-lab` (tipo `fence_hyperv_lab`), senza cambiare `stonith-enabled=false`; tale evoluzione **non fa parte del checkpoint finale del Capitolo 23**.
+Il capitolo è stato chiuso prima del laboratorio parallelo di fencing. Successivamente è stata registrata la R1 `ch23-fence-hyperv-lab` (tipo `fence_hyperv_lab`, oggi disabilitata) e poi la R2 con due dispositivi reciprocamente vincolati, `ch23-fence-linux` e `ch23-fence-dhcp`. Il **26/11/2026** la R2 ha superato il fencing manuale reale di `linux-client01`, con failover della VIP su `dhcp-client01`, riaccensione Hyper-V e reinserimento di entrambi i nodi; la VIP è quindi ritornata su `linux-client01`. `stonith-enabled=false` **non è stato cambiato**. Queste evoluzioni **non fanno parte del checkpoint finale originario del Capitolo 23** e non dimostrano il fencing automatico. [Procedura R2](../laboratorio-fencing-esterno-hyperv/procedure/02-fencing-reciproco-r2.md).
 
 ## Prove realmente effettuate
 
