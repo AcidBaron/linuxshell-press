@@ -10,6 +10,8 @@ Il repository raccoglie script, configurazioni e altri file operativi citati nei
 
 - [Indice dei materiali del libro](./noi-amministriamo-infrastrutture-linux/)
 - [Laboratorio – Provisioning automatico di VM Linux da golden image](./noi-amministriamo-infrastrutture-linux/laboratorio-provisioning-golden-image/)
+- [Capitolo 23 – Pacemaker e Corosync](./noi-amministriamo-infrastrutture-linux/capitolo-23-pacemaker-corosync/)
+- [Laboratorio – Fencing esterno Hyper-V (agente STONITH sperimentale R1)](./noi-amministriamo-infrastrutture-linux/laboratorio-fencing-esterno-hyperv/)
 
 ## Verifica dei file
 
