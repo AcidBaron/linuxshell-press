@@ -27,7 +27,7 @@ python3 -m py_compile ~/fence_hyperv_lab_R2.py
 sudo install -o root -g root -m 755 ~/fence_hyperv_lab_R2.py /usr/sbin/fence_hyperv_lab_r2
 ```
 
-Nel laboratorio il file R2 era già stato predisposto localmente sui due nodi e installato in `/usr/sbin/fence_hyperv_lab_r2`. La versione pubblicata è **ricostruita dal sorgente R1 disponibile su GitHub** con le modifiche R2 documentate; per stabilire l'identità byte per byte con i file locali occorre confrontare le checksum, prima di sostituirli.
+Nel laboratorio il file R2 era già stato predisposto localmente sui due nodi e installato in `/usr/sbin/fence_hyperv_lab_r2`. **Verifica completata con gli export dei due nodi:** il file pubblicato su GitHub è identico byte per byte al file `/usr/sbin/fence_hyperv_lab_r2` su entrambe le VM (SHA-256 `d36eaf89877fa62af250618310aeee1772966812a88a7a6c011d2ed478a3bd67`). L'intestazione interna del codice continua a dire R1/web01: è un residuo puramente descrittivo della derivazione; il codice effettivo utilizza esclusivamente la allowlist R2. Si mantiene qui il file esatto collaudato.
 
 ```bash
 sha256sum /usr/sbin/fence_hyperv_lab_r2
