@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-"""Experimental Hyper-V cluster-node fence agent for an isolated lab (R2).
+"""Experimental Hyper-V fence agent for an isolated lab (R1).
 
-Uses the system fence-agents 'fencing' library. Only linux-client01 and dhcp-client01 are permitted.
+Uses the system fence-agents 'fencing' library. Only web01 is permitted.
 No production suitability or automatic cluster deployment is implied.
 """
 
@@ -68,7 +68,11 @@ def set_power_status(connection, options):
 
 
 def get_outlets_status(connection, options):
-    return {name: ('Hyper-V cluster node', get_power_status(connection, {**options, '--plug': name})) for name in sorted(ALLOWED_VMS)}
+    return {
+        name: ('Hyper-V cluster node', get_power_status(
+            connection, {**options, '--plug': name}))
+        for name in sorted(ALLOWED_VMS)
+    }
 
 
 def main():
@@ -76,7 +80,7 @@ def main():
     options = f.check_input(device_opt, f.process_input(device_opt))
     docs = {
         'shortdesc': 'Experimental Hyper-V lab fence agent',
-        'longdesc': 'Uses SSH and Windows PowerShell to control two allowlisted Hyper-V lab cluster VMs. Not for production.',
+        'longdesc': 'Uses SSH and Windows PowerShell to control the two allowlisted Hyper-V cluster nodes. Not for production.',
         'vendorurl': 'https://github.com/',
     }
     f.show_docs(options, docs)
