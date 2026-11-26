@@ -29,6 +29,8 @@ Il libro resta la fonte editoriale e didattica autorevole. Questo albero raccogl
 - [Capitolo 20 – Servizi self-hosted: Nextcloud](./capitolo-20-nextcloud/)
 - [Capitolo 21 – Alta disponibilità: concetti e architetture](./capitolo-21-alta-disponibilita/)
 - [Capitolo 22 – Keepalived e VRRP](./capitolo-22-keepalived-vrrp/)
+- [Capitolo 23 – Pacemaker e Corosync](./capitolo-23-pacemaker-corosync/)
+- [Laboratorio parallelo – Realizzare un dispositivo di fencing esterno (Hyper-V)](./laboratorio-fencing-esterno-hyperv/)
 - [Laboratorio parallelo – pfSense](./laboratorio-pfsense/)
 - [Laboratorio parallelo – Provisioning automatico di VM Linux da golden image](./laboratorio-provisioning-golden-image/)
 
