@@ -17,7 +17,7 @@ Prototipi **R1 e R2** sperimentali per *Noi Amministriamo Infrastrutture Linux*,
 ## File
 
 - [Agente collaudato R1](src/fence_hyperv_lab_R1.py)
-- [Agente sperimentale R2](src/fence_hyperv_lab_R2.py) — codice ricostruito da R1 e modifiche R2; checksum da confrontare con i file installati
+- [Agente sperimentale R2](src/fence_hyperv_lab_R2.py) — identico al sorgente installato su entrambi i nodi, verificato con SHA-256
 - [Installazione, test e integrazione PCS — R1](procedure/01-installazione-e-test.md)
 - [Fencing reciproco, failover e recupero — R2](procedure/02-fencing-reciproco-r2.md)
 - [Limiti operativi e recupero](rollback/README.md)
@@ -35,6 +35,9 @@ SHA-256 del sorgente R1: `f590a6c8c0bd57b2b0cd90975a2b4807886ee1c57b3ebdad7f068f
 - Durante R1 la proprietà `stonith-enabled=false` è stata mantenuta; nessuna ripresa dei nodi del cluster era stata provata a quel punto.
 
 ## Evidenze R2 del 26/11/2026
+
+Audit dei due export: `fence_hyperv_lab_r2` SHA-256 `d36eaf89877fa62af250618310aeee1772966812a88a7a6c011d2ed478a3bd67` su entrambi; sorgente GitHub identico per contenuto (blob Git `e1e169e5f5a251433783982bcfa3e2cc95e5f4ce`). Tutti i file di configurazione, tranne le istantanee di stato di PCS, hanno hash identico sui due nodi. [Audit completo](procedure/03-audit-export-r2.md).
+
 
 - Installazione separata sui due nodi come `fence_hyperv_lab_r2`; allowlist dei soli due nodi.
 - Due risorse STONITH con collocazione reciproca: `ch23-fence-linux` avviata su `dhcp-client01`, `ch23-fence-dhcp` su `linux-client01`; vecchia R1 disabilitata.
