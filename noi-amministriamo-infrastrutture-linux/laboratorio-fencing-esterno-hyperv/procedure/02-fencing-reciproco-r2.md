@@ -1,6 +1,6 @@
 # R2 — Fencing reciproco dei due nodi Pacemaker tramite Hyper-V
 
-**Data del test:** 26 novembre 2026. **Stato:** PASS per il fencing manuale richiesto tramite `stonith_admin`, failover e reinserimento; **fencing automatico non validato** (`stonith-enabled=false`).
+**Date delle prove:** 26–27 novembre 2026. **Stato:** PASS per fencing manuale e recupero (26/11), e PASS per fencing automatico su perdita Corosync, failover e reinserimento (27/11). Il risultato automatico è specifico allo scenario verificato; non è una garanzia di comportamento in tutti i guasti.
 
 Questa prova amplia la R1, che poteva gestire soltanto `web01`. La R2 consente **esclusivamente** `linux-client01` e `dhcp-client01`; impedisce quindi di usare accidentalmente `web01` con il nuovo agente. Le due VM sono sullo stesso Hyper-V, che resta un singolo punto di guasto. Non usare questa implementazione come modello di produzione senza verifiche aggiuntive.
 
@@ -129,8 +129,95 @@ Esito finale: **entrambi online**; `ch23-demo` Started su `dhcp-client01`; `ch23
 
 **PASS:** agente R2 su entrambi i nodi, allowlist, comandi di stato SSH/Hyper-V, due risorse STONITH separate, vincoli reciproci, fencing **manuale** di A richiesto da B, quorum superstite, VIP visibile sull'interfaccia B dopo failover, riaccensione di A, rientro nel cluster e ripristino di entrambe le risorse STONITH.
 
-**NON VALIDATO:** `stonith-enabled=true`, isolamento attivato automaticamente dopo fault/partizione, sicurezza in scenari di split-brain o guasto dell'host Hyper-V, resilienza a problemi SSH e rientro automatico dei servizi al boot. **Non attivare il fencing automatico sulla base del solo PASS manuale.**
+**PASS aggiuntivo (27/11):** attivazione di `stonith-enabled=true`, fencing automatico di `dhcp-client01` dopo isolamento del traffico Corosync su UDP 5405, spegnimento confermato da Windows Hyper-V e successivo reinserimento del nodo. **NON VALIDATO:** sicurezza generalizzata contro split-brain, guasto dell'host Hyper-V, altri tipi di partizione, resilienza a problemi SSH e rientro automatico dei servizi al boot. Non replicare su macchine che ospitano dati o servizi indispensabili.
 
 ## Sicurezza e rollback
 
 Vedi [rollback R1/R2](../rollback/README.md). `Stop-VM -TurnOff` interrompe la VM bruscamente e può provocare perdita dati. Eseguire test distruttivi solo con supervisione, checkpoint coerenti e assenza di attività da preservare. Non pubblicare mai chiavi private, token o credenziali.
+
+
+## Prova di fencing automatico — 27 novembre 2026 (PASS)
+
+**Prerequisito emerso nella ripresa:** `dhcp-client01` dipende dal server DHCP `dhcp01`. Quando `dhcp01` era spento, `pcs cluster start --all` non raggiungeva B sulla porta TCP 2224. Avviato `dhcp01` e ottenuto l'indirizzo `10.77.0.150`, il cluster era nuovamente Online sui due nodi. Il laboratorio richiede dunque `dhcp01` acceso dall'inizio, oltre a host Hyper-V, `linux-client01`, `dhcp-client01` e servizi di infrastruttura necessari.
+
+### Preparazione controllata
+
+Da `linux-client01`:
+```bash
+sudo pcs property set stonith-action=off
+sudo pcs stonith update ch23-fence-linux pcmk_delay_base=15s
+sudo pcs property set stonith-enabled=true
+sudo pcs status
+sudo corosync-cfgtool -s
+```
+
+Il cluster mostrava entrambi i nodi online, quorum, entrambe le risorse STONITH R2 Started sui peer opposti; il collegamento Corosync `knet` era connesso su `10.77.0.101`. Il valore `pcmk_delay_base=15s` su `ch23-fence-linux` rende più tardivo il tentativo di spegnere A, favorendo A in caso di contesa; **non elimina ogni rischio di fencing reciproco**.
+
+Su `dhcp-client01` è stato installato il file **temporaneo** `/usr/local/sbin/ch23-corosync-heal.sh`:
+
+```bash
+sudo tee /usr/local/sbin/ch23-corosync-heal.sh >/dev/null <<'EOF'
+#!/bin/bash
+iptables -D INPUT -s 10.77.0.101 \
+  -p udp --dport 5405 -j DROP 2>/dev/null || true
+iptables -D OUTPUT -d 10.77.0.101 \
+  -p udp --dport 5405 -j DROP 2>/dev/null || true
+EOF
+sudo chmod 700 /usr/local/sbin/ch23-corosync-heal.sh
+sudo bash -n /usr/local/sbin/ch23-corosync-heal.sh
+```
+
+La prova è stata eseguita con console Hyper-V disponibili e senza attività da preservare sulla VM bersaglio. Il timer non può funzionare durante lo spegnimento della VM: **non va considerato una protezione sufficiente per un test distruttivo**.
+
+### Simulazione della perdita del collegamento Corosync
+
+Su `dhcp-client01`, in una sola sessione:
+```bash
+sudo bash <<'EOF'
+set -e
+systemd-run --unit=ch23-corosync-heal-r2 --on-active=120s \
+  /usr/local/sbin/ch23-corosync-heal.sh
+iptables -w -I INPUT -s 10.77.0.101 -p udp --dport 5405 -j DROP
+iptables -w -I OUTPUT -d 10.77.0.101 -p udp --dport 5405 -j DROP
+echo "CH23: isolamento Corosync applicato"
+EOF
+```
+
+Risultato: timer creato, `CH23: isolamento Corosync applicato`.
+
+Sul nodo superstite A, `sudo pcs status --full` ha mostrato:
+
+```text
+Current DC: linux-client01 (1) - partition with quorum
+Node dhcp-client01 (2): OFFLINE
+Node linux-client01 (1): online
+ch23-demo: Started linux-client01
+ch23-vip: Started linux-client01
+ch23-fence-linux: Stopped
+ch23-fence-dhcp: Started linux-client01
+
+Fencing History:
+turning off of dhcp-client01 successful:
+delegate=linux-client01, client=pacemaker-controld.1106,
+origin=linux-client01, completed='2026-11-27 15:20:58.421676Z'
+```
+
+**Osservazione determinante:** `client=pacemaker-controld`, non `stonith_admin`. Il fencing è stato avviato automaticamente dal controller Pacemaker in risposta all'isolamento di B.
+
+Verifica indipendente in Windows PowerShell:
+```powershell
+Get-VM -Name "linux-client01", "dhcp-client01" |
+  Select-Object Name, State
+```
+Risultato osservato: `linux-client01 Running`; `dhcp-client01 Off`.
+
+### Recupero dopo il fencing
+
+Da Windows:
+```powershell
+Start-VM -Name "dhcp-client01"
+Get-VM -Name "dhcp-client01" | Select-Object Name, State
+```
+Risultato: `dhcp-client01 Running`. Dopo il rientro in cluster, `sudo pcs status` eseguito su B ha mostrato entrambi i nodi **Online**, quorum, `ch23-demo` Started su A, `ch23-vip` Started su B, `ch23-fence-linux` Started su B e `ch23-fence-dhcp` Started su A.
+
+**Stato finale osservato:** `stonith-enabled=true`, `stonith-action=off`, `pcmk_delay_base=15s` su `ch23-fence-linux`; timer e regole di test erano temporanei. Prima di considerare conclusa la pulizia del laboratorio, controllare l'assenza di eventuali regole residue e dei timer di test. Il risultato con `stonith-enabled=true` resta sperimentale e non deve essere esteso a infrastrutture produttive.
