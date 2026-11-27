@@ -2,7 +2,7 @@
 
 Prototipi **R1 e R2** sperimentali per *Noi Amministriamo Infrastrutture Linux*, costruito il **26 novembre 2026**. Utilizza una VM Ubuntu per inviare, tramite SSH con chiave, comandi PowerShell all'host Windows Hyper-V. Riusando la libreria Python `fencing.py` del pacchetto `fence-agents`, fornisce un semplice agente riconosciuto da PCS/Pacemaker.
 
-**Non sono fence agent per produzione.** R1 controlla deliberatamente **solo `web01`**; R2 è limitato ai due nodi `linux-client01` e `dhcp-client01`. R2 ha superato una prova reale di fencing **manuale**, failover della VIP e reinserimento, ma non è stato validato il fencing automatico (`stonith-enabled=false`).
+**Non sono fence agent per produzione.** R1 controlla deliberatamente **solo `web01`**; R2 è limitato ai due nodi `linux-client01` e `dhcp-client01`. R2 ha superato sia la prova di fencing **manuale** (26/11/2026) sia una prova di fencing **automatico** su perdita del collegamento Corosync (27/11/2026), con recupero del nodo. Rimane un prototipo didattico non adatto alla produzione.
 
 ## Architettura verificata
 
@@ -44,7 +44,17 @@ Audit dei due export: `fence_hyperv_lab_r2` SHA-256 `d36eaf89877fa62af250618310a
 - Test manuale `stonith_admin --fence=linux-client01 --timeout=60` da `dhcp-client01`: **exit 0**, nodo A offline.
 - Il nodo superstite ha mantenuto quorum e acquisito `ch23-vip` (`10.77.0.91/24` effettivamente osservata su `eth0`).
 - Dopo `Start-VM` su Hyper-V e `pcs cluster start` su A: entrambi i nodi online e VIP ritornata su A.
-- `stonith-enabled=false` **non modificato**: la gestione automatica dei fault non è ancora dimostrata.
+- Nel test manuale del 26/11 `stonith-enabled=false` è stato mantenuto. **Il 27/11** è stato abilitato `stonith-enabled=true` e validato un caso di fencing automatico. Vedi [procedura e risultati R2](procedure/02-fencing-reciproco-r2.md).
+
+## Evidenze R2 del 27/11/2026 — fencing automatico
+
+- Cluster a due nodi avviato con entrambi online e quorum; inizialmente il nodo `dhcp-client01` non aveva ottenuto DHCP perché `dhcp01` era spento. **`dhcp01` è un prerequisito operativo** per questo ambiente.
+- `stonith-action=off`, `stonith-enabled=true`, `stonith-timeout=60s`; impostato `pcmk_delay_base=15s` su `ch23-fence-linux` per favorire `linux-client01` durante una partizione. Il ritardo non è garanzia universale.
+- Interrotto solo il traffico UDP 5405 (Corosync/knet) da/verso `linux-client01` su `dhcp-client01` tramite due regole iptables temporanee. Previsto un timer di ripristino, non efficace durante lo spegnimento.
+- **Fencing History:** `turning off of dhcp-client01 successful`, `delegate=linux-client01`, `client=pacemaker-controld.1106`, `origin=linux-client01`, `completed='2026-11-27 15:20:58.421676Z'`. Evidenza di decisione **automatica**, senza `stonith_admin` manuale.
+- Windows Hyper-V: `linux-client01 Running`, `dhcp-client01 Off`; con nodo B isolato e spento, `ch23-demo` si è avviata su A e la VIP è rimasta su A.
+- Dopo `Start-VM -Name "dhcp-client01"` e reinserimento: entrambi online, DC `linux-client01`, risorse R2 correttamente collocate; `ch23-demo` su A e VIP su B.
+- **Limite:** è stata validata questa singola simulazione di perdita Corosync, non un insieme esaustivo di failure modes o scenari di split-brain.
 
 ## Pubblicazione e attribuzione
 
