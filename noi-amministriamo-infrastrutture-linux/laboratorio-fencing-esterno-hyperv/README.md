@@ -20,6 +20,7 @@ Prototipi **R1 e R2** sperimentali per *Noi Amministriamo Infrastrutture Linux*,
 - [Agente sperimentale R2](src/fence_hyperv_lab_R2.py) — identico al sorgente installato su entrambi i nodi, verificato con SHA-256
 - [Installazione, test e integrazione PCS — R1](procedure/01-installazione-e-test.md)
 - [Fencing reciproco, failover e recupero — R2](procedure/02-fencing-reciproco-r2.md)
+- [Script di ripristino delle regole Corosync per la prova automatica](linux/ch23-corosync-heal.sh)
 - [Limiti operativi e recupero](rollback/README.md)
 
 SHA-256 del sorgente R1: `f590a6c8c0bd57b2b0cd90975a2b4807886ee1c57b3ebdad7f068ff4bee0d44d`.
