@@ -62,3 +62,13 @@ Audit dei due export: `fence_hyperv_lab_r2` SHA-256 `d36eaf89877fa62af250618310a
 Il sorgente del prototipo è distribuito secondo la [GPL-3.0 del repository](../../LICENSE). Utilizza la **libreria di sistema** `fencing.py` del progetto open source fence-agents, senza includerne una copia modificata. Il modello architetturale è stato studiato da `fence_virsh`. Conservare i copyright e le licenze dei componenti upstream nelle rispettive distribuzioni.
 
 Questa è una pubblicazione di un **prototipo didattico sperimentale**, non un'affermazione che non esistano altri agenti Hyper-V né una certificazione per l'uso in produzione.
+
+## Appendice C — Servizio web Nginx in alta disponibilità (28/11/2026)
+
+**PASS per failover controllato**, senza simulare uno spegnimento improvviso: gruppo `ch23-web` con `ch23-vip` e `ch23-nginx` attivo su A, trasferito dopo `pcs node standby linux-client01` su B, pagina HTTP verificata da Firefox tramite `10.77.0.91`, poi `pcs node unstandby linux-client01` con ritorno del gruppo su A e ripristino delle risorse STONITH R2. Non sono stati misurati tempi di indisponibilità.
+
+- [Procedura operativa, risultati e limiti](appendice-c-nginx-ha/procedura.md)
+- [Virtual host Nginx](appendice-c-nginx-ha/nginx/ch23-ha.conf)
+- [Pagina HTML del test](appendice-c-nginx-ha/www/index.html)
+
+Per la parte editoriale, i file di circa una pagina o meno possono essere riportati integralmente nel testo; file più lunghi restano nel repository con istruzioni di download, installazione e verifica.
