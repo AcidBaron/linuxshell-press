@@ -90,6 +90,49 @@ sudo pcs status
 
 **PASS osservato:** entrambi i nodi Online, quorum, gruppo `ch23-web` (VIP + Nginx) nuovamente su `linux-client01`; `ch23-demo` su `dhcp-client01`, `ch23-fence-linux` su B, `ch23-fence-dhcp` su A; R1 disabilitata.
 
+## 6. Riavvio delle VM e avvio automatico del cluster
+
+**Configurazione effettivamente osservata il 28/11/2026:** su entrambi i nodi `corosync` e `pacemaker` erano `active/disabled` e `pcsd` era `active/enabled`; Nginx era stato disabilitato all'avvio autonomo su entrambe le VM mediante `sudo systemctl disable --now nginx`. In queste condizioni, dopo un riavvio completo dei due nodi, **non è previsto che il cluster riparta automaticamente** e, di conseguenza, **non sono previsti l'avvio gestito di Nginx e l'assegnazione della VIP** finché non si avvia Pacemaker. Si tratta del comportamento atteso dalla configurazione, **non di un test di reboot del gruppo web già eseguito**.
+
+### Modalità attuale: avvio manuale dopo il boot
+
+Accendere prima le VM infrastrutturali necessarie, **in particolare `dhcp01`**, da cui `dhcp-client01` ottiene l'indirizzo IP, e poi i due nodi. Da uno dei nodi, quando entrambi sono raggiungibili:
+
+```bash
+sudo pcs cluster start --all
+sudo pcs status
+```
+
+Con i due nodi online e il quorum, Pacemaker può avviare il gruppo `ch23-web`, assegnare la VIP `10.77.0.91` e avviare Nginx sul nodo scelto. La VIP non è una configurazione IP persistente impostata manualmente sulle VM, ma una risorsa gestita dal cluster.
+
+### Opzione alternativa: abilitare l'avvio del cluster al boot
+
+**Non eseguita né validata nel laboratorio descritto in questa appendice**; è una possibile configurazione futura, da scegliere consapevolmente:
+
+```bash
+sudo pcs cluster enable --all
+```
+
+Il comando abilita **Corosync e Pacemaker** all'avvio automatico sui nodi del cluster. **Non** avvia immediatamente il cluster se è fermo: per un avvio immediato usare separatamente `sudo pcs cluster start --all`. Non è necessario abilitare `nginx.service` con `systemctl enable`: Nginx rimane gestito da Pacemaker come risorsa `ch23-nginx` all'interno del gruppo `ch23-web`.
+
+Controllare poi lo stato:
+
+```bash
+sudo pcs status
+```
+
+La disponibilità del servizio al boot resta subordinata a rete operativa, nodi raggiungibili, quorum e dispositivi di fencing funzionanti. **Nel nostro ambiente è fondamentale che `dhcp01` venga avviato prima dei nodi** o che il loro indirizzamento sia reso indipendente da esso.
+
+Per tornare all'impostazione didattica con avvio manuale, se è stata attivata l'opzione:
+
+```bash
+sudo pcs cluster disable --all
+```
+
+Questa operazione disabilita l'avvio automatico ai boot successivi; non va confusa con `pcs cluster stop --all`, che arresta il cluster in esecuzione.
+
+**Non è stato effettuato un test di riavvio completo delle VM per verificare queste alternative.** Non attribuire loro l'esito PASS fino a una prova specifica.
+
 ## Limiti e rollback
 
 - Non sono stati eseguiti test distruttivi del gruppo web né misure di downtime; il browser è stato controllato **a trasferimento terminato**.
